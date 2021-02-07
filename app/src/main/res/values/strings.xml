@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">WeatherForecast</string>
+    <string name="ok">OK</string>
+    <string name="temp">Temp:</string>
+    <string name="plus">plus</string>
+    <string name="feels_like">Feels like:</string>
+    <string name="weather_icon">weather_icon</string>
+    <string name="please_input_city_name_nto_see_weather">Please input city name \nto see the weather</string>
+    <string name="city">City</string>
+    <string name="next">Next</string>
+</resources>
