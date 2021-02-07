@@ -11,7 +11,6 @@ import com.test.weatherForecast.db.Weather
 import com.test.weatherForecast.network.ApiResult
 import com.test.weatherForecast.network.CityWeatherApi
 import com.test.weatherForecast.network.ResponseHandler
-import com.test.weatherForecast.ui.main.CityWeatherRepo
 
 class CityWeatherRepoImpl(
     private val cityWeatherApi: CityWeatherApi,

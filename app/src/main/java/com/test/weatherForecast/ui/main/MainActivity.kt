@@ -13,11 +13,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.test.weatherForecast.ui.adapter.CityPageListAdapter
-import com.test.weatherForecast.data.model.CityWeatherResponse
 import com.test.weatherForecast.R
+import com.test.weatherForecast.data.model.CityWeatherResponse
 import com.test.weatherForecast.network.ApiResult
 import com.test.weatherForecast.network.Status
+import com.test.weatherForecast.ui.adapter.CityPageListAdapter
 import com.test.weatherForecast.util.NetworkHelper
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.progress_layout.*
@@ -87,30 +87,36 @@ class MainActivity : AppCompatActivity() {
             adapter = cityAdapter
         }
         itemTouchHelper.attachToRecyclerView(cities_recyclerview)
-        alertDialogDemo()
-        observeCtyWeather()
-        plus.setOnClickListener {
-            alertDialogDemo()
-        }
 
-        checkNetworkAndDoUpdates()
+        observeCtyWeather()
+        setPlusOnClickListener()
 
         viewModel.getCachedCityWeathersLiveData()
-
         observeCachedCityWeathers()
+    }
+
+    private fun setPlusOnClickListener() {
+        plus.setOnClickListener {
+            openAddCityDialog()
+        }
+
     }
 
     private fun checkNetworkAndDoUpdates() {
         if (NetworkHelper.isNetworkAvailable(this)) {
             viewModel.getCachedCityWeathersAndUpdate()
         } else {
-            showServerErrorAlert("Turn on internet to see weather today")
+            showServerErrorAlert(getString(R.string.enable_internet))
         }
     }
 
     private fun observeCachedCityWeathers() {
         viewModel.cityList?.observe(this, {
-            cityAdapter.submitList(it)
+            if (it.isNullOrEmpty()) {
+                checkNetworkAndDoUpdates()
+            } else {
+                cityAdapter.submitList(it)
+            }
         })
     }
 
@@ -138,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun alertDialogDemo() {
+    private fun openAddCityDialog() {
         val view = layoutInflater.inflate(R.layout.add_city_view, null)
         val nextBtn = view.findViewById<Button>(R.id.btn_next)
         val cityTxt = view.findViewById<TextView>(R.id.city_txt)

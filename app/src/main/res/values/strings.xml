@@ -8,4 +8,5 @@
     <string name="please_input_city_name_nto_see_weather">Please input city name \nto see the weather</string>
     <string name="city">City</string>
     <string name="next">Next</string>
+    <string name="enable_internet">Enable internet to see weather today</string>
 </resources>

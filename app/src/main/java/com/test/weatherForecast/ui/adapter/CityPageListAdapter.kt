@@ -9,11 +9,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.test.weatherForecast.R
 import com.test.weatherForecast.db.City
-import com.test.weatherForecast.util.CityDiffUtilItemCallback
+import com.test.weatherForecast.util.CityDiffUtiItemCallback
 import kotlinx.android.synthetic.main.city_item.view.*
 
 class CityPageListAdapter(val clickListener: (City) -> Unit) :
-    PagedListAdapter<City, CityPageListAdapter.CityViewHolder>(CityDiffUtilItemCallback()) {
+    PagedListAdapter<City, CityPageListAdapter.CityViewHolder>(CityDiffUtiItemCallback()) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,

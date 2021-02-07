@@ -14,16 +14,17 @@ import kotlinx.coroutines.withContext
 
 class CityWeatherViewModel(private val repoCity: CityWeatherRepo) : ViewModel() {
 
-    private val _weatherData = MutableLiveData<ApiResult<CityWeatherResponse>>()
-    val cityWeatherData: LiveData<ApiResult<CityWeatherResponse>> get() = _weatherData
+    private val _cityWeatherData = MutableLiveData<ApiResult<CityWeatherResponse>>()
+    val cityWeatherData: LiveData<ApiResult<CityWeatherResponse>> get() = _cityWeatherData
     var cityList: LiveData<PagedList<City>>? = null
 
     fun getWeatherByCityName(city: String) {
+        _cityWeatherData.value = ApiResult.loading()
         viewModelScope.launch(Dispatchers.IO) {
             val response = repoCity.getCityWeather(city)
             response.data?.let { repoCity.insertCity(it) }
             withContext(Dispatchers.Main) {
-                _weatherData.value = response
+                _cityWeatherData.value = response
             }
         }
     }
@@ -53,7 +54,7 @@ class CityWeatherViewModel(private val repoCity: CityWeatherRepo) : ViewModel() 
         }
     }
 
-    fun fetchAndUpdateCity(city: City) {
+    private fun fetchAndUpdateCity(city: City) {
         viewModelScope.launch(Dispatchers.IO) {
             val response = repoCity.getCityWeather(city.name)
             response.data?.let { it1 ->
