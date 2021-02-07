@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.test.weatherForecast.R
 import com.test.weatherForecast.data.model.CityWeatherResponse
+import com.test.weatherForecast.db.City
 import com.test.weatherForecast.network.ApiResult
 import com.test.weatherForecast.network.Status
 import com.test.weatherForecast.ui.adapter.CityPageListAdapter
@@ -30,76 +31,38 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cityAdapter: CityPageListAdapter
     private val itemTouchHelper by lazy {
         val simpleItemTouchCallback =
-            object : ItemTouchHelper.SimpleCallback(
-                UP or
-                        DOWN or
-                        START or
-                        END, 0
-            ) {
-
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder
-                ): Boolean {
-                    return true
-                }
-
-                override fun onSwiped(
-                    viewHolder: RecyclerView.ViewHolder,
-                    direction: Int
-                ) {
-                }
-
-                override fun onMoved(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    fromPos: Int,
-                    target: RecyclerView.ViewHolder,
-                    toPos: Int,
-                    x: Int,
-                    y: Int
-                ) {
-                    super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y)
-
-                    val fromCity = cityAdapter.currentList?.get(fromPos)
-                    val toCity = cityAdapter.currentList?.get(toPos)
-
-                    fromCity?.order = toPos
-                    toCity?.order = fromPos
-
-                    fromCity?.let { viewModel.updateCity(it) }
-                    toCity?.let { viewModel.updateCity(it) }
-                }
-            }
-
+            createTouchHelperCallback()
         ItemTouchHelper(simpleItemTouchCallback)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        cities_recyclerview.apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            cityAdapter = CityPageListAdapter(clickListener = {
-                viewModel.deleteCity(it)
-            })
-            adapter = cityAdapter
-        }
-        itemTouchHelper.attachToRecyclerView(cities_recyclerview)
 
-        observeCtyWeather()
+        setupRecyclerView()
+
+        observeSearchedCtyWeather()
         setPlusOnClickListener()
 
         viewModel.getCachedCityWeathersLiveData()
         observeCachedCityWeathers()
     }
 
+    private fun setupRecyclerView() {
+        cities_recyclerview.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            cityAdapter = CityPageListAdapter(longClickListener = {
+                showDeleteCityDialog(it)
+            })
+            adapter = cityAdapter
+        }
+        itemTouchHelper.attachToRecyclerView(cities_recyclerview)
+    }
+
     private fun setPlusOnClickListener() {
         plus.setOnClickListener {
-            openAddCityDialog()
+            showAddCityDialog()
         }
-
     }
 
     private fun checkNetworkAndDoUpdates() {
@@ -116,11 +79,12 @@ class MainActivity : AppCompatActivity() {
                 checkNetworkAndDoUpdates()
             } else {
                 cityAdapter.submitList(it)
+                cities_recyclerview.smoothScrollToPosition(it.size)
             }
         })
     }
 
-    private fun observeCtyWeather() {
+    private fun observeSearchedCtyWeather() {
         viewModel.cityWeatherData.observe(this, {
             consumeWeatherResponse(it)
         })
@@ -144,11 +108,55 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun openAddCityDialog() {
+    private fun createTouchHelperCallback(): Callback {
+        return object : ItemTouchHelper.SimpleCallback(
+            UP or
+                    DOWN or
+                    START or
+                    END, 0
+        ) {
+
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return true
+            }
+
+            override fun onSwiped(
+                viewHolder: RecyclerView.ViewHolder,
+                direction: Int
+            ) {
+            }
+
+            override fun onMoved(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                fromPos: Int,
+                target: RecyclerView.ViewHolder,
+                toPos: Int,
+                x: Int,
+                y: Int
+            ) {
+                super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y)
+
+                val fromCity = cityAdapter.currentList?.get(fromPos)
+                val toCity = cityAdapter.currentList?.get(toPos)
+
+                fromCity?.order = toPos
+                toCity?.order = fromPos
+
+                fromCity?.let { viewModel.updateCity(it) }
+                toCity?.let { viewModel.updateCity(it) }
+            }
+        }
+    }
+
+    private fun showAddCityDialog() {
         val view = layoutInflater.inflate(R.layout.add_city_view, null)
         val nextBtn = view.findViewById<Button>(R.id.btn_next)
         val cityTxt = view.findViewById<TextView>(R.id.city_txt)
-
 
         val dialog = AlertDialog.Builder(this)
             .setView(view)
@@ -164,6 +172,19 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun showDeleteCityDialog(city: City) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Do you want to delete ?")
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            viewModel.deleteCity(city)
+        }
+
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.show()
+    }
 
     private fun showServerErrorAlert(message: String?) {
         val builder = android.app.AlertDialog.Builder(this, R.style.AlertDialogTheme)

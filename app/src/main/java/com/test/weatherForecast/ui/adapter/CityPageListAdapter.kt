@@ -12,7 +12,7 @@ import com.test.weatherForecast.db.City
 import com.test.weatherForecast.util.CityDiffUtiItemCallback
 import kotlinx.android.synthetic.main.city_item.view.*
 
-class CityPageListAdapter(val clickListener: (City) -> Unit) :
+class CityPageListAdapter(val longClickListener: (City) -> Unit) :
     PagedListAdapter<City, CityPageListAdapter.CityViewHolder>(CityDiffUtiItemCallback()) {
 
     override fun onCreateViewHolder(
@@ -26,7 +26,7 @@ class CityPageListAdapter(val clickListener: (City) -> Unit) :
 
     override fun onBindViewHolder(holder: CityViewHolder, position: Int) {
         val cityWeather = getItem(position)
-        cityWeather?.let { holder.bind(it, clickListener) }
+        cityWeather?.let { holder.bind(it, longClickListener) }
     }
 
     class CityViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -42,8 +42,9 @@ class CityPageListAdapter(val clickListener: (City) -> Unit) :
                 feels_like.text = city.weather.feels_like.toString()
                 city_name.text = city.name
 
-                itemView.setOnClickListener {
+                itemView.setOnLongClickListener {
                     clickListener(city)
+                    true
                 }
             }
 
